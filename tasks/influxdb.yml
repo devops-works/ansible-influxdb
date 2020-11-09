@@ -9,13 +9,15 @@
     state: present
     update_cache: yes
 
+- name: Installs python-pip
+  apt:
+    pkg: "{{ influxdb_python_pip_package }}"
+    state: present
+
 - name: Installs influxdb
   apt:
-    pkg: "{{ item }}"
+    pkg: influxdb
     state: present
-  with_items:
-    - influxdb
-    - python-pip
   notify:
     - Start influxdb
 
@@ -26,7 +28,7 @@
     owner: influxdb
     group: influxdb
     mode: 0755
-  with_items:
+  loop:
     - "{{ influxdb_datadir }}"
     - "{{ influxdb_waldir }}"
 
@@ -65,7 +67,7 @@
     database_name: "{{ item.database }}"
     login_username: "{{ influxdb_admin_user }}"
     login_password: "{{ influxdb_admin_password }}"
-  with_items: "{{ influxdb_users }}"
+  loop: "{{ influxdb_users }}"
   when: influxdb_users is defined and "database" in item
 
 - name: Adds database retention
@@ -77,7 +79,7 @@
     replication: 1
     login_username: "{{ influxdb_admin_user }}"
     login_password: "{{ influxdb_admin_password }}"
-  with_items: "{{ influxdb_retentions }}"
+  loop: "{{ influxdb_retentions }}"
   when: influxdb_retentions is defined
 
 - name: Creates influxdb users
@@ -87,5 +89,5 @@
     login_username: "{{ influxdb_admin_user }}"
     login_password: "{{ influxdb_admin_password }}"
     admin: "{{ item.admin | default(omit) }}"
-  with_items: "{{ influxdb_users }}"
+  loop: "{{ influxdb_users }}"
   when: influxdb_users is defined
