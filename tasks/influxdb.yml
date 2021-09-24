@@ -36,22 +36,12 @@
   pip:
     name: influxdb
 
-- name: Adds influxdb configuration
-  template:
-    src: influxdb.conf.j2
-    dest: /etc/influxdb/influxdb.conf
-    mode: 0640
-    owner: influxdb
-    group: root
-  notify:
-    - Restart influxdb
-
 - name: Ensure InfluxDB is started
   service:
     name: influxdb
     state: started
 
-- name: Creates influxdb admin user
+- name: Creates admin users
   influxdb_user:
     user_name: "{{ influxdb_admin_user }}"
     user_password: "{{ influxdb_admin_password }}"
@@ -59,6 +49,16 @@
     login_password: "{{ influxdb_admin_password }}"
     admin: yes
   when: influxdb_admin_user is defined and influxdb_admin_password is defined
+
+- meta: flush_handlers
+
+- name: Adds influxdb configuration
+  template:
+    src: influxdb.conf.j2
+    dest: /etc/influxdb/influxdb.conf
+    mode: 0640
+    owner: influxdb
+    group: root
   notify:
     - Restart influxdb
 
@@ -91,3 +91,4 @@
     admin: "{{ item.admin | default(omit) }}"
   loop: "{{ influxdb_users }}"
   when: influxdb_users is defined
+
