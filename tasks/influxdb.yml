@@ -1,6 +1,6 @@
 - name: Imports influxdb apt key
   apt_key:
-    url: https://repos.influxdata.com/influxdb.key
+    url: https://repos.influxdata.com/influxdata-archive_compat.key
     state: present
 
 - name: Adds influxdb repository
@@ -82,7 +82,7 @@
   loop: "{{ influxdb_retentions }}"
   when: influxdb_retentions is defined
 
-- name: Creates influxdb users
+- name: Create influxdb users
   influxdb_user:
     user_name: "{{ item.username }}"
     user_password: "{{ item.password }}"
@@ -92,3 +92,15 @@
   loop: "{{ influxdb_users }}"
   when: influxdb_users is defined
 
+- name: Grant influxdb users
+  influxdb_user:
+    user_name: "{{ item.username }}"
+    user_password: "{{ item.password }}"
+    login_username: "{{ influxdb_admin_user }}"
+    login_password: "{{ influxdb_admin_password }}"
+    admin: "{{ item.admin | default(omit) }}"
+    grants:
+      - database: "{{ item.database }}"
+        privilege: 'ALL'
+  loop: "{{ influxdb_users }}"
+  when: influxdb_users is defined and "database" in item
