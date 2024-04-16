@@ -17,3 +17,6 @@ influxdb_http_auth_enabled: "false"
 # Data dir
 influxdb_datadir: /var/lib/influxdb/
 influxdb_waldir: /var/lib/influxdb/wal
+
+# Index
+influxdb_indexversion: "inmem"
